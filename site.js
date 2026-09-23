@@ -5,19 +5,72 @@
   var doc = document, root = doc.documentElement, body = doc.body;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ── Preloader: short, once per session, never blocks content ── */
+  /* ── Preloader: gold logo, rotating dot-cloud figure and a 0→100 counter.
+        The page content is already in the HTML underneath (search engines read it). ── */
   var pre = doc.getElementById('preloader');
-  var seen = false;
-  try { seen = sessionStorage.getItem('ds-pre') === '1'; sessionStorage.setItem('ds-pre', '1'); } catch (e) { /* private mode */ }
   var heroRevealAt = 0;
+  var preStop = false;
   function hidePre() {
     if (!pre || pre.classList.contains('done')) return;
     pre.classList.add('done');
+    root.style.overflow = '';
     heroRevealAt = performance.now();
-    setTimeout(function () { pre.remove(); }, 700);
+    setTimeout(function () { preStop = true; pre.remove(); }, 950);
   }
-  if (seen || reduce) hidePre();
-  else setTimeout(hidePre, 900);
+  if (pre) {
+    root.style.overflow = 'hidden';
+    var pctEl = pre.querySelector('.pl-pct span');
+    var pct = 0;
+    var counter = setInterval(function () {
+      pct = Math.min(100, pct + (Math.random() * 2.0 + 1.4));
+      pctEl.textContent = Math.round(pct);
+      if (pct >= 100) clearInterval(counter);
+    }, 58);
+    setTimeout(function () { clearInterval(counter); pctEl.textContent = '100'; hidePre(); }, 2500);
+
+    (function preFigure() {
+      var canvas = pre.querySelector('.pl-canvas');
+      var d = window.DUMANS_POSES;
+      if (!canvas || !canvas.getContext || !d) return;
+      var ctx = canvas.getContext('2d');
+      var DPR = Math.min(window.devicePixelRatio || 1, 2);
+      var S = canvas.clientWidth;
+      canvas.width = canvas.height = S * DPR;
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      var N = d.n, poses = d.poses, P = [];
+      for (var i = 0; i < N; i++) P.push({ z: (Math.random() - 0.5) * 40, tw: Math.random() * 6.283 });
+      var HOLD = 1.6, TRANS = 1.0, SEG = HOLD + TRANS, angle = 0, t = 0, last = 0;
+      function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+      function ease(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+      function frame(now) {
+        if (preStop) return;
+        if (!last) last = now;
+        var dt = Math.min(0.05, (now - last) / 1000); last = now;
+        t += dt; angle += 0.55 * dt;
+        ctx.clearRect(0, 0, S, S);
+        var cycle = t / SEG, idx = Math.floor(cycle) % poses.length, nxt = (idx + 1) % poses.length;
+        var local = t - Math.floor(cycle) * SEG;
+        var mt = local <= HOLD ? 0 : ease((local - HOLD) / TRANS);
+        var A = poses[idx], B = poses[nxt];
+        var scale = S / 280, cx = S / 2, cy = S / 2, sin = Math.sin(angle), cos = Math.cos(angle);
+        for (var k = 0; k < N; k++) {
+          var x = A[k * 2] + (B[k * 2] - A[k * 2]) * mt;
+          var y = A[k * 2 + 1] + (B[k * 2 + 1] - A[k * 2 + 1]) * mt;
+          var z = P[k].z;
+          var rx = x * cos - z * sin, rz = x * sin + z * cos;
+          var persp = 420 / (420 + rz);
+          var depthN = clamp((rz + 70) / 140, 0, 1);
+          var a = clamp((0.34 + 0.66 * depthN) * (0.82 + 0.18 * Math.sin(t * 2 + P[k].tw)), 0.1, 1);
+          ctx.fillStyle = (depthN > 0.66 ? 'rgba(232,199,102,' : 'rgba(244,242,234,') + a.toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(cx + rx * scale * persp, cy + y * scale * persp, clamp((0.6 + 0.85 * depthN) * persp, 0.5, 2.6), 0, 6.2832);
+          ctx.fill();
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+  }
 
   /* ── Header: solid on scroll, mobile menu ── */
   var header = doc.querySelector('.site-header');
