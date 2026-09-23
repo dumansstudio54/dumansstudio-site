@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /Eski/
+
+Sitemap: https://dumansstudio.com/sitemap.xml
