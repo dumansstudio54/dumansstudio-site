@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#FBF9F4">
+<title>Bilgi Yarışması · DumansStudio</title>
+<link rel="icon" href="favicon-48.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+@font-face{font-family:'Cormorant Garamond';font-weight:400 700;font-display:swap;src:url(cormorant-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+20A0-20AB,U+20AD-20C0}
+@font-face{font-family:'Cormorant Garamond';font-weight:400 700;font-display:swap;src:url(cormorant-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212}
+@font-face{font-family:'Jost';font-weight:300 700;font-display:swap;src:url(jost-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+20A0-20AB,U+20AD-20C0}
+@font-face{font-family:'Jost';font-weight:300 700;font-display:swap;src:url(jost-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212}
+:root{--krem:#FBF9F4;--bej:#F3EFE6;--altin:#C5A880;--bronz:#8C6D3B;--murekkep:#1F1A15;--gri:#7A6F62;--cizgi:#E6DCCB;--yesil:#4E7A52;--kirmizi:#A2463B}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--krem);color:var(--murekkep);font-family:'Jost',sans-serif;font-variant-numeric:lining-nums}
+body{min-height:100dvh;display:flex;flex-direction:column}
+.ust{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--cizgi);background:var(--krem);position:sticky;top:0;z-index:5}
+.marka{display:flex;align-items:center;gap:10px}
+.marka img{width:30px;height:auto}
+.marka b{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:15px;letter-spacing:.22em}
+.marka small{display:block;font-size:10px;letter-spacing:.2em;color:var(--bronz);text-transform:uppercase}
+.puan-rozet{font-size:12px;color:var(--gri);text-align:right}
+.puan-rozet b{display:block;font-size:17px;color:var(--murekkep);font-weight:500}
+.baglanti{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);background:var(--murekkep);color:#fff;font-size:12px;padding:8px 14px;border-radius:999px;display:none;z-index:9}
+.baglanti.goster{display:block}
+main{flex:1;display:flex;flex-direction:column;padding:22px 18px 28px;max-width:560px;width:100%;margin:0 auto}
+.ekran{display:none;flex:1;flex-direction:column}
+.ekran.aktif{display:flex}
+.kas{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--bronz);font-weight:500}
+h1{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:38px;line-height:1.05;margin:10px 0 8px}
+h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:26px;line-height:1.2;margin:8px 0 0}
+p{font-size:15px;line-height:1.6;color:var(--gri);margin:8px 0 0}
+.ortala{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center}
+label.alan{display:block;margin-top:24px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gri)}
+input{width:100%;margin-top:8px;font:400 18px 'Jost',sans-serif;padding:15px 16px;border:1px solid var(--cizgi);border-radius:14px;background:#fff;color:var(--murekkep);outline:none}
+input:focus{border-color:var(--altin);box-shadow:0 0 0 3px rgba(197,168,128,.25)}
+.btn{display:block;width:100%;margin-top:16px;padding:16px;border:0;border-radius:14px;background:var(--murekkep);color:#fff;font:500 16px 'Jost',sans-serif;letter-spacing:.04em;cursor:pointer}
+.btn:disabled{opacity:.45}
+.hata{color:var(--kirmizi);font-size:13px;margin-top:10px;min-height:18px}
+.nokta{display:inline-flex;gap:7px;margin:26px auto 0}
+.nokta i{width:9px;height:9px;border-radius:50%;background:var(--altin);animation:zipla 1.2s infinite ease-in-out}
+.nokta i:nth-child(2){animation-delay:.15s}.nokta i:nth-child(3){animation-delay:.3s}
+@keyframes zipla{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-6px)}}
+.soru-ust{display:flex;justify-content:space-between;align-items:baseline}
+.sayac{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--bronz);min-width:44px;text-align:right}
+.cubuk{height:5px;background:var(--bej);border-radius:99px;margin:10px 0 18px;overflow:hidden}
+.cubuk i{display:block;height:100%;background:linear-gradient(90deg,var(--altin),var(--bronz));width:100%;transition:width .25s linear}
+.soru-metin{font-family:'Cormorant Garamond',serif;font-size:24px;line-height:1.25;font-weight:500;margin:0 0 18px}
+.siklar{display:flex;flex-direction:column;gap:10px}
+.sik{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px 16px;border:1.5px solid var(--cizgi);border-radius:16px;background:#fff;font:400 16px/1.4 'Jost',sans-serif;color:var(--murekkep);cursor:pointer;transition:transform .1s,border-color .15s,background .15s}
+.sik:active{transform:scale(.985)}
+.sik b{flex:none;width:34px;height:34px;border-radius:50%;background:var(--bej);color:var(--bronz);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px}
+.sik.secili{border-color:var(--bronz);background:#FFF8EC}
+.sik.secili b{background:var(--bronz);color:#fff}
+.sik.dogru{border-color:var(--yesil);background:#EEF5EE}.sik.dogru b{background:var(--yesil);color:#fff}
+.sik.yanlis{border-color:var(--kirmizi);background:#FBEFED}.sik.yanlis b{background:var(--kirmizi);color:#fff}
+.siklar.kilitli .sik{cursor:default}
+.siklar.kilitli .sik:not(.secili):not(.dogru){opacity:.5}
+.durum-not{margin-top:16px;text-align:center;font-size:14px;color:var(--gri);min-height:22px}
+.sonuc-ikon{width:84px;height:84px;border-radius:50%;margin:0 auto 14px;display:flex;align-items:center;justify-content:center}
+.sonuc-ikon svg{width:44px;height:44px;stroke:#fff;stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.sonuc-ikon.ok{background:var(--yesil)}.sonuc-ikon.no{background:var(--kirmizi)}.sonuc-ikon.bos{background:var(--gri)}
+.kazanc{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;color:var(--bronz);margin-top:6px}
+.kutu{margin-top:20px;background:#fff;border:1px solid var(--cizgi);border-radius:16px;padding:16px;text-align:left}
+.kutu small{display:block;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--bronz);margin-bottom:6px}
+.kutu p{margin:0;color:var(--murekkep)}
+.istat{display:flex;gap:10px;margin-top:16px}
+.istat div{flex:1;background:var(--bej);border-radius:14px;padding:12px;text-align:center}
+.istat b{display:block;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600}
+.istat span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gri)}
+.madalya{font-family:'Cormorant Garamond',serif;font-size:80px;font-weight:600;color:var(--bronz);line-height:1}
+.alt-yazi{text-align:center;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gri);padding:14px}
+</style>
+</head>
+<body>
+<header class="ust">
+  <div class="marka"><img src="logo-mark.png" alt=""><div><b>DUMANSSTUDIO</b><small>× <span id="ortak">Rivaryum</span></small></div></div>
+  <div class="puan-rozet" id="rozet" hidden><span id="rozet-ad"></span><b id="rozet-puan">0 puan</b></div>
+</header>
+
+<main>
+  <!-- Giriş -->
+  <section class="ekran" id="e-giris">
+    <div class="kas">QR Bilgi Yarışması</div>
+    <h1>Hoş geldiniz</h1>
+    <p>Adınızı yazın ve yarışmaya katılın. Sorular büyük ekranla aynı anda telefonunuzda açılacak; her soru için 30 saniyeniz var.</p>
+    <label class="alan" for="ad">Adınız</label>
+    <input id="ad" maxlength="24" autocomplete="given-name" placeholder="Örn. Ayşe Y." enterkeyhint="go">
+    <button class="btn" id="katil">Yarışmaya katıl</button>
+    <div class="hata" id="giris-hata"></div>
+  </section>
+
+  <!-- Oda yok -->
+  <section class="ekran" id="e-odayok">
+    <div class="ortala"><div class="kas">Bilgi Yarışması</div><h1>QR kodu okutun</h1><p>Yarışmaya katılmak için büyük ekrandaki QR kodu telefonunuzun kamerasıyla okutun.</p></div>
+  </section>
+
+  <!-- Bekleme -->
+  <section class="ekran" id="e-bekle">
+    <div class="ortala">
+      <div class="kas">Lobiye katıldınız</div>
+      <h1 id="bekle-baslik">Hazırsınız</h1>
+      <p id="bekle-metin">Yarışmanın başlaması bekleniyor. Ekranı açık tutun; ilk soru birazdan gelecek.</p>
+      <div class="nokta"><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <!-- Soru -->
+  <section class="ekran" id="e-soru">
+    <div class="soru-ust"><div class="kas" id="soru-kat"></div><div class="sayac" id="sayac">30</div></div>
+    <div class="cubuk"><i id="cubuk"></i></div>
+    <div class="soru-metin" id="soru-metin"></div>
+    <div class="siklar" id="siklar"></div>
+    <div class="durum-not" id="soru-not"></div>
+  </section>
+
+  <!-- Cevap sonucu -->
+  <section class="ekran" id="e-sonuc">
+    <div class="ortala">
+      <div class="sonuc-ikon" id="s-ikon"></div>
+      <h1 id="s-baslik"></h1>
+      <div class="kazanc" id="s-kazanc"></div>
+      <div class="istat"><div><b id="s-toplam">0</b><span>Toplam puan</span></div><div><b id="s-sira">–</b><span>Sıranız</span></div></div>
+      <div class="kutu" id="s-kutu"><small>Biliyor muydunuz?</small><p id="s-aciklama"></p></div>
+      <p id="s-not" style="text-align:center;margin-top:16px">Sonraki soru birazdan…</p>
+    </div>
+  </section>
+
+  <!-- Final -->
+  <section class="ekran" id="e-final">
+    <div class="ortala">
+      <div class="kas">Yarışma tamamlandı</div>
+      <div class="madalya" id="f-sira"></div>
+      <h1 id="f-baslik"></h1>
+      <p id="f-metin"></p>
+      <div class="istat"><div><b id="f-puan">0</b><span>Toplam puan</span></div><div><b id="f-dogru">0</b><span>Doğru cevap</span></div></div>
+    </div>
+  </section>
+</main>
+<div class="alt-yazi">DumansStudio · Pilates · EMS · Yoga</div>
+<div class="baglanti" id="baglanti">Bağlantı kuruluyor…</div>
+
+<script>
+// Supabase'in yalnızca anlık mesajlaşma (Realtime Broadcast) özelliği kullanılır; veritabanına hiçbir şey yazılmaz.
+const SB_URL='https://thaftqzytdmecpgurnwp.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoYWZ0cXp5dGRtZWNwZ3VybndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODE1NDEsImV4cCI6MjA5NDY1NzU0MX0.bkVJZjJYSRl16V8hXm5aAbEcNUrGm4pZp267rk-9G6w';
+const $=id=>document.getElementById(id);
+const oda=(new URLSearchParams(location.search).get('oda')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+const depo={al(k){try{return localStorage.getItem(k)}catch(e){return null}},koy(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let benimId=depo.al('dsq-id');
+if(!benimId){benimId=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);depo.koy('dsq-id',benimId);}
+let ad=depo.al('dsq-ad-'+oda)||'';
+let durum=null, sayacZaman=null, bitis=0, cevaplarim={}, katilGonder=()=>{}, sonKatil=0;
+try{cevaplarim=JSON.parse(depo.al('dsq-cevap-'+oda)||'{}')}catch(e){}
+
+function goster(ekran){document.querySelectorAll('.ekran').forEach(e=>e.classList.toggle('aktif',e.id==='e-'+ekran));}
+const IKON={ok:'<svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',no:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',bos:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>'};
+const kac=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+if(!oda){goster('odayok');}
+else{
+  const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
+  const kanal=sb.channel('dsq-'+oda,{config:{broadcast:{self:false}}});
+  let bagli=false;
+  kanal.on('broadcast',{event:'durum'},({payload})=>durumIsle(payload));
+  kanal.subscribe(st=>{
+    bagli=st==='SUBSCRIBED';
+    $('baglanti').classList.toggle('goster',!bagli);
+    $('baglanti').textContent=st==='SUBSCRIBED'?'':'Bağlantı kuruluyor…';
+    if(bagli&&ad)katilGonder();
+  });
+  function gonder(event,payload){if(bagli)kanal.send({type:'broadcast',event,payload});}
+  katilGonder=function(){sonKatil=Date.now();gonder("katil",{id:benimId,ad});};
+
+  // Giriş
+  $('ad').value=ad;
+  if(ad){goster('bekle');$('bekle-baslik').textContent='Hazırsınız, '+ad.split(' ')[0];rozetGuncelle(0);}
+  else goster('giris');
+  $('katil').onclick=()=>{
+    const v=$('ad').value.trim().replace(/\s+/g,' ');
+    if(v.length<2){$('giris-hata').textContent='Lütfen adınızı yazın.';return;}
+    ad=v;depo.koy('dsq-ad-'+oda,ad);$('giris-hata').textContent='';
+    katilGonder();
+    $('bekle-baslik').textContent='Hazırsınız, '+ad.split(' ')[0];
+    rozetGuncelle(0);goster('bekle');
+  };
+  $('ad').addEventListener('keydown',e=>{if(e.key==='Enter')$('katil').click();});
+
+  // Cevap
+  window.sec=function(harf){
+    if(!durum||durum.faz!=='soru'||cevaplarim[durum.i]||Date.now()>bitis)return;
+    cevaplarim[durum.i]=harf;depo.koy('dsq-cevap-'+oda,JSON.stringify(cevaplarim));
+    gonder('cevap',{id:benimId,i:durum.i,secim:harf});
+    siklariCiz();
+    $('soru-not').textContent='Cevabınız alındı. Süre bitince doğru cevap açıklanacak.';
+  };
+  // Cevap kaybolmasın: sunucu almadıysa bir kez daha gönder (sunucu aynı oyuncudan ikinci cevabı yok sayar)
+  setInterval(()=>{if(durum&&durum.faz==='soru'&&cevaplarim[durum.i]&&!(durum.alindi||[]).includes(benimId))gonder('cevap',{id:benimId,i:durum.i,secim:cevaplarim[durum.i]});},2500);
+}
+
+function rozetGuncelle(p){$('rozet').hidden=!ad;$('rozet-ad').textContent=ad;$('rozet-puan').textContent=(p||0).toLocaleString('tr-TR')+' puan';}
+
+function durumIsle(d){
+  if(!d||d.oda!==oda)return;
+  durum=d;
+  if(d.ortak)$('ortak').textContent=d.ortak;
+  const ben=(d.oyuncular||{})[benimId];
+  rozetGuncelle(ben?ben.p:0);
+  if(!ad){goster('giris');return;}
+  if(!ben&&Date.now()-sonKatil>3000)katilGonder(); // sunucu bizi tanımıyorsa (ör. sunucu ekranı yenilendi) yeniden katıl
+  clearInterval(sayacZaman);
+  if(d.faz==='lobi'){goster('bekle');$('bekle-metin').textContent='Yarışmanın başlaması bekleniyor. Ekranı açık tutun; ilk soru birazdan gelecek.';}
+  else if(d.faz==='soru'){
+    bitis=Date.now()+(d.kalan||0);
+    $('soru-kat').textContent='Soru '+(d.i+1)+' / '+d.toplam+' · '+d.soru.kategori;
+    $('soru-metin').textContent=d.soru.metin;
+    siklariCiz();
+    $('soru-not').textContent=cevaplarim[d.i]?'Cevabınız alındı. Süre bitince doğru cevap açıklanacak.':'';
+    goster('soru');sayacCalis();sayacZaman=setInterval(sayacCalis,200);
+  }
+  else if(d.faz==='cevap'||d.faz==='tablo'){
+    const son=ben&&ben.son&&ben.son.i===d.i?ben.son:null;
+    const secim=cevaplarim[d.i];
+    if(d.faz==='cevap'&&d.soru){$('soru-kat').textContent='Soru '+(d.i+1)+' / '+d.toplam+' · '+d.soru.kategori;}
+    let tip='bos',baslik='Süre doldu',kazanc='';
+    if(secim&&secim===d.dogru){tip='ok';baslik='Doğru cevap!';kazanc='+'+((son&&son.k)||0).toLocaleString('tr-TR');}
+    else if(secim){tip='no';baslik='Bu sefer olmadı';kazanc='';}
+    $('s-ikon').className='sonuc-ikon '+tip;$('s-ikon').innerHTML=IKON[tip];
+    $('s-baslik').textContent=baslik;
+    $('s-kazanc').textContent=kazanc;$('s-kazanc').hidden=!kazanc;
+    $('s-toplam').textContent=((ben&&ben.p)||0).toLocaleString('tr-TR');
+    $('s-sira').textContent=ben&&ben.s?ben.s+'.':'–';
+    const ds=d.soru&&d.soru.secenekler.find(x=>x.id===d.dogru);
+    $('s-aciklama').textContent=(ds?'Doğru cevap '+d.dogru+': '+ds.text+'. ':'')+(d.aciklama||'');
+    $('s-kutu').hidden=!d.aciklama&&!ds;
+    $('s-not').textContent=d.i+1>=d.toplam?'Sonuçlar birazdan açıklanacak…':'Sonraki soru birazdan…';
+    goster('sonuc');
+  }
+  else if(d.faz==='final'){
+    const s=ben&&ben.s;
+    $('f-sira').textContent=s?s+'.':'';
+    $('f-baslik').textContent=s&&s<=3?'Tebrikler, ilk 3\'tesiniz!':'Katıldığınız için teşekkürler';
+    $('f-metin').textContent=s&&s<=3?'Ödülünüzü almak için lütfen sunucumuza yanınıza gelmesini bekleyin.':'Bu keyifli yarışmada bizimle olduğunuz için teşekkür ederiz.';
+    $('f-puan').textContent=((ben&&ben.p)||0).toLocaleString('tr-TR');
+    $('f-dogru').textContent=(ben&&ben.d)||0;
+    goster('final');
+  }
+}
+function siklariCiz(){
+  const d=durum, secim=cevaplarim[d.i], kilit=!!secim||Date.now()>bitis;
+  $('siklar').className='siklar'+(kilit?' kilitli':'');
+  $('siklar').innerHTML=d.soru.secenekler.map(o=>'<button class="sik'+(secim===o.id?' secili':'')+'" onclick="sec(\''+o.id+'\')"'+(kilit?' disabled':'')+'><b>'+o.id+'</b><span>'+kac(o.text)+'</span></button>').join('');
+}
+function sayacCalis(){
+  const kalan=Math.max(0,bitis-Date.now()), toplam=(durum&&durum.sure||30)*1000;
+  $('sayac').textContent=Math.ceil(kalan/1000);
+  $('cubuk').style.width=(kalan/toplam*100)+'%';
+  if(kalan<=0){clearInterval(sayacZaman);siklariCiz();if(!cevaplarim[durum.i])$('soru-not').textContent='Süre doldu, cevaplar kilitlendi.';}
+}
+</script>
+</body>
+</html>
