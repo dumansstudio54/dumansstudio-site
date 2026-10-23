@@ -73,11 +73,41 @@ input:focus{border-color:var(--altin);box-shadow:0 0 0 3px rgba(197,168,128,.25)
 .istat span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gri)}
 .madalya{font-family:'Cormorant Garamond',serif;font-size:80px;font-weight:600;color:var(--bronz);line-height:1}
 .alt-yazi{text-align:center;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gri);padding:14px}
+[hidden]{display:none!important}
+.marka small img{height:13px;width:auto;vertical-align:-2px}
+/* birinciye kutlama: gece arka planı + havai fişek */
+#fisek{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+main,.alt-yazi{position:relative;z-index:2}
+body.gece{background:#15110D}
+body.gece .ust{background:#15110D;border-color:#3A3128}
+body.gece .marka b,body.gece #e-final h1,body.gece #e-final .istat b{color:#F3EBDD}
+body.gece .marka small img{filter:invert(1)}
+body.gece #e-final p,body.gece .alt-yazi,body.gece .puan-rozet{color:#B8AC99}
+body.gece .puan-rozet b{color:#F3EBDD}
+body.gece #e-final .madalya{color:var(--altin)}
+body.gece #e-final .istat div{background:rgba(255,255,255,.07)}
+body.gece #e-final .istat span{color:#B8AC99}
+/* finalde kazananlar listesi (herkes görür) */
+.kazananlar{margin-top:18px;background:#fff;border:1px solid var(--cizgi);border-radius:16px;padding:14px 16px;text-align:left}
+.kazananlar small{display:block;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--bronz);margin-bottom:6px}
+.kz{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--bej)}
+.kz:first-of-type{border-top:0}
+.kz i{font-style:normal;flex:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:17px;color:#fff;background:#B9AE9E}
+.kz.o1 i{background:linear-gradient(160deg,#D8BC8E,#8C6D3B)}.kz.o2 i{background:linear-gradient(160deg,#CFC6B8,#8E8577)}.kz.o3 i{background:linear-gradient(160deg,#D9B79A,#9A6B4B)}
+.kz span{flex:1;font-size:15px;color:var(--murekkep)}
+.kz span em{font-style:normal;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--bronz);margin-left:6px}
+.kz b{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--murekkep)}
+.kz.ben span{font-weight:600}
+.kz .hediye{display:inline-block;font-family:'Jost',sans-serif;font-weight:500;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--yesil);background:#EEF5EE;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:1px}
+body.gece .kazananlar{background:rgba(255,255,255,.06);border-color:#3A3128}
+body.gece .kz{border-color:#3A3128}body.gece .kz span,body.gece .kz b{color:#F3EBDD}
+body.gece .kz .hediye{background:rgba(159,211,168,.15);color:#9FD3A8}
+.tekrar{margin-top:18px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--altin)}
 </style>
 </head>
 <body>
 <header class="ust">
-  <div class="marka"><img src="logo-mark.png" alt=""><div><b>DUMANSSTUDIO</b><small>× <span id="ortak">Rivaryum</span></small></div></div>
+  <div class="marka"><img src="logo-mark.png" alt=""><div><b>DUMANSSTUDIO</b><small id="ortak-satir" hidden>× <span id="ortak"></span></small></div></div>
   <div class="puan-rozet" id="rozet" hidden><span id="rozet-ad"></span><b id="rozet-puan">0 puan</b></div>
 </header>
 
@@ -86,7 +116,7 @@ input:focus{border-color:var(--altin);box-shadow:0 0 0 3px rgba(197,168,128,.25)
   <section class="ekran" id="e-giris">
     <div class="kas">QR Bilgi Yarışması</div>
     <h1>Hoş geldiniz</h1>
-    <p>Adınızı yazın ve yarışmaya katılın. Sorular büyük ekranla aynı anda telefonunuzda açılacak; her soru için 30 saniyeniz var.</p>
+    <p id="giris-metin">Adınızı yazın ve yarışmaya katılın. Sorular büyük ekranla aynı anda telefonunuzda açılacak; her soru için 30 saniyeniz var.</p>
     <label class="alan" for="ad">Adınız</label>
     <input id="ad" maxlength="24" autocomplete="given-name" placeholder="Örn. Ayşe Y." enterkeyhint="go">
     <button class="btn" id="katil">Yarışmaya katıl</button>
@@ -136,7 +166,9 @@ input:focus{border-color:var(--altin);box-shadow:0 0 0 3px rgba(197,168,128,.25)
       <div class="madalya" id="f-sira"></div>
       <h1 id="f-baslik"></h1>
       <p id="f-metin"></p>
-      <div class="istat"><div><b id="f-puan">0</b><span>Toplam puan</span></div><div><b id="f-dogru">0</b><span>Doğru cevap</span></div></div>
+      <div class="istat"><div><b id="f-sira2">–</b><span>Sıranız</span></div><div><b id="f-puan">0</b><span>Toplam puan</span></div><div><b id="f-dogru">0</b><span>Doğru cevap</span></div></div>
+      <div class="kazananlar" id="f-kazananlar" hidden><small>Kazananlar</small><div id="f-liste"></div></div>
+      <div class="tekrar" id="f-tekrar" hidden>Havai fişekleri tekrar görmek için ekrana dokunun</div>
     </div>
   </section>
 </main>
@@ -155,6 +187,7 @@ if(!benimId){benimId=Math.random().toString(36).slice(2,10)+Date.now().toString(
 let ad=depo.al('dsq-ad-'+oda)||'';
 let durum=null, sayacZaman=null, bitis=0, cevaplarim={}, katilGonder=()=>{}, sonKatil=0;
 try{cevaplarim=JSON.parse(depo.al('dsq-cevap-'+oda)||'{}')}catch(e){}
+let oyunId=depo.al('dsq-oyun-'+oda);
 
 function goster(ekran){document.querySelectorAll('.ekran').forEach(e=>e.classList.toggle('aktif',e.id==='e-'+ekran));}
 const IKON={ok:'<svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',no:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',bos:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>'};
@@ -206,12 +239,22 @@ function rozetGuncelle(p){$('rozet').hidden=!ad;$('rozet-ad').textContent=ad;$('
 function durumIsle(d){
   if(!d||d.oda!==oda)return;
   durum=d;
-  if(d.ortak)$('ortak').textContent=d.ortak;
+  // Aynı QR ile yeni yarışma başladıysa eski cevapları unut
+  if(d.oyun&&d.oyun!==oyunId){if(oyunId||d.faz==='lobi'){cevaplarim={};depo.koy('dsq-cevap-'+oda,'{}');kutlandi=false;}oyunId=d.oyun;depo.koy('dsq-oyun-'+oda,oyunId);}
+  $('ortak-satir').hidden=!(d.ortak||d.ortakLogo);
+  // Ortak logosu yalnızca sitedeki bir .png dosya adı olabilir
+  if(d.ortakLogo&&/^[a-z0-9-]+\.png$/.test(d.ortakLogo)){if(!$('ortak').querySelector('img'))$('ortak').innerHTML='<img src="'+d.ortakLogo+'" alt="">';$('ortak').querySelector('img').alt=d.ortak||'';}
+  else if(d.ortak)$('ortak').textContent=d.ortak;
+  if(d.sure)$('giris-metin').textContent='Adınızı yazın ve yarışmaya katılın. Sorular büyük ekranla aynı anda telefonunuzda açılacak; her soru için '+d.sure+' saniyeniz var.';
   const ben=(d.oyuncular||{})[benimId];
   rozetGuncelle(ben?ben.p:0);
   if(!ad){goster('giris');return;}
   if(!ben&&Date.now()-sonKatil>3000)katilGonder(); // sunucu bizi tanımıyorsa (ör. sunucu ekranı yenilendi) yeniden katıl
   clearInterval(sayacZaman);
+  // kutlama (gece + havai fişek): birinciye; ödül sayısı belirtildiyse ödül alan herkese
+  const birinci=d.faz==='final'&&ben&&ben.s&&(ben.s===1||(d.odul&&ben.s<=d.odul));
+  document.body.classList.toggle('gece',birinci);
+  if(!birinci&&fisekDur)fisekDur();
   if(d.faz==='lobi'){goster('bekle');$('bekle-metin').textContent='Yarışmanın başlaması bekleniyor. Ekranı açık tutun; ilk soru birazdan gelecek.';}
   else if(d.faz==='soru'){
     bitis=Date.now()+(d.kalan||0);
@@ -242,13 +285,60 @@ function durumIsle(d){
   else if(d.faz==='final'){
     const s=ben&&ben.s;
     $('f-sira').textContent=s?s+'.':'';
-    $('f-baslik').textContent=s&&s<=3?'Tebrikler, ilk 3\'tesiniz!':'Katıldığınız için teşekkürler';
-    $('f-metin').textContent=s&&s<=3?'Ödülünüzü almak için lütfen sunucumuza yanınıza gelmesini bekleyin.':'Bu keyifli yarışmada bizimle olduğunuz için teşekkür ederiz.';
+    const odulNot='Ödülünüzü almak için lütfen sunucumuzun yanınıza gelmesini bekleyin.';
+    const odulde=s&&d.odul&&s<=d.odul;
+    $('f-baslik').textContent=s===1?'Birinci oldunuz!':odulde?(['','','İkinci oldunuz!','Üçüncü oldunuz!'][s]||'Tebrikler!'):s&&s<=3?'Tebrikler, ilk 3\'tesiniz!':'Katıldığınız için teşekkürler';
+    $('f-metin').textContent=(s===1||odulde)?(d.kazananNot||odulNot):s&&s<=3?(d.ilk3Not||odulNot):'Bu keyifli yarışmada bizimle olduğunuz için teşekkür ederiz.';
     $('f-puan').textContent=((ben&&ben.p)||0).toLocaleString('tr-TR');
     $('f-dogru').textContent=(ben&&ben.d)||0;
+    $('f-sira2').textContent=s?(s+(d.kisi?' / '+d.kisi:'')):'–';
+    // Kazananlar listesi: herkes kimin kazandığını görür
+    const kz=Array.isArray(d.kazananlar)?d.kazananlar:[];
+    $('f-kazananlar').hidden=!kz.length;
+    $('f-liste').innerHTML=kz.map((o,n)=>'<div class="kz o'+(n+1)+(o.id===benimId?' ben':'')+'"><i>'+(n+1)+'</i><span>'+kac(o.ad)+(o.id===benimId?'<em>siz</em>':'')+((d.odul?n<d.odul:n<3)?'<span class="hediye">'+kac(d.odulAdi||'Ödül')+'</span>':'')+'</span><b>'+(+o.p||0).toLocaleString('tr-TR')+'</b></div>').join('');
+    $('f-tekrar').hidden=!birinci;
     goster('final');
+    if(birinci&&!kutlandi){kutlandi=true;havaiFisek();}
   }
 }
+// ── Havai fişek (yalnızca birincinin telefonunda) ──
+let fisekDur=null, kutlandi=false;
+function havaiFisek(sure){
+  if(fisekDur)fisekDur();
+  let c=$('fisek');
+  if(!c){c=document.createElement('canvas');c.id='fisek';document.body.appendChild(c);}
+  if(navigator.vibrate)try{navigator.vibrate([120,80,120,80,260])}catch(e){}
+  const x=c.getContext('2d'), dpr=Math.min(2,window.devicePixelRatio||1);
+  const boyut=()=>{c.width=innerWidth*dpr;c.height=innerHeight*dpr;};boyut();addEventListener('resize',boyut);
+  const RENK=['#F6D58E','#E8B95E','#FFF1CF','#F28C6B','#F5A9C4','#9FD3A8','#9CC9F2','#FFFFFF'];
+  const g=.06*dpr, roket=[], par=[], son=performance.now()+(sure||12000);
+  let sonAtis=0, calis=true, iz;
+  function patlat(px,py){
+    const r1=RENK[Math.random()*RENK.length|0], r2=RENK[Math.random()*RENK.length|0], n=60+(Math.random()*40|0), guc=(1.8+Math.random()*1.6)*dpr;
+    for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.08, v=guc*(.45+Math.random()*.6);
+      par.push({x:px,y:py,px,py,vx:Math.cos(a)*v,vy:Math.sin(a)*v,o:1,s:(1.2+Math.random()*1.2)*dpr,r:Math.random()<.6?r1:r2,d:.011+Math.random()*.008});}
+  }
+  function kare(t){
+    if(!calis)return;
+    if(t<son&&t-sonAtis>450+Math.random()*550){sonAtis=t;
+      const hedef=c.height*(.1+Math.random()*.3);
+      roket.push({x:c.width*(.15+Math.random()*.7),y:c.height,vy:-Math.sqrt(2*g*(c.height-hedef)),px:0,py:0});}
+    x.clearRect(0,0,c.width,c.height);x.globalCompositeOperation='lighter';x.lineCap='round';
+    for(let i=roket.length-1;i>=0;i--){const k=roket[i];k.px=k.x;k.py=k.y;k.vy+=g;k.y+=k.vy;
+      x.strokeStyle='rgba(255,230,180,.9)';x.lineWidth=2*dpr;x.beginPath();x.moveTo(k.px,k.py+6*dpr);x.lineTo(k.x,k.y);x.stroke();
+      if(k.vy>=-1*dpr){patlat(k.x,k.y);roket.splice(i,1);}}
+    for(let i=par.length-1;i>=0;i--){const p=par[i];p.px=p.x;p.py=p.y;p.vx*=.985;p.vy=p.vy*.985+g*.55;p.x+=p.vx;p.y+=p.vy;p.o-=p.d;
+      if(p.o<=0){par.splice(i,1);continue;}
+      x.globalAlpha=Math.max(0,p.o);x.strokeStyle=p.r;x.lineWidth=p.s;x.beginPath();x.moveTo(p.px,p.py);x.lineTo(p.x,p.y);x.stroke();}
+    x.globalAlpha=1;x.globalCompositeOperation='source-over';
+    if(t>=son&&!roket.length&&!par.length){fisekDur();return;}
+    iz=requestAnimationFrame(kare);
+  }
+  fisekDur=()=>{calis=false;cancelAnimationFrame(iz);removeEventListener('resize',boyut);x.clearRect(0,0,c.width,c.height);fisekDur=null;};
+  iz=requestAnimationFrame(kare);
+}
+document.addEventListener('click',()=>{if(document.body.classList.contains('gece')&&$('e-final').classList.contains('aktif'))havaiFisek();});
+
 function siklariCiz(){
   const d=durum, secim=cevaplarim[d.i], kilit=!!secim||Date.now()>bitis;
   $('siklar').className='siklar'+(kilit?' kilitli':'');
