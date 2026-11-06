@@ -116,6 +116,8 @@ html,body{margin:0;height:100%;background:var(--krem);color:var(--murekkep);font
 /* 2 şıklı sorular daha iri */
 .siklar.iki .sik{font-size:2vw;padding:3.4vh 2vw}
 .siklar.iki .sik b{width:4.2vw;height:4.2vw;font-size:1.8vw}
+/* 3 şıklı sorular tek satırda: uzun soruda bilgi notu alttaki düğmelerin altında kalmasın */
+.siklar.uc{grid-template-columns:repeat(3,1fr)}
 /* final: gece sahnesi + havai fişek */
 #fisek{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 .sahne{z-index:2}
@@ -153,6 +155,8 @@ body.kapali .bant-sag,body.kapali .marka>span,body.kapali .kontrol,body.kapali .
   .bant{height:56px;padding:0 14px}
   .marka{gap:8px}.marka img{height:28px}.marka b{font-size:13px;letter-spacing:.18em}.marka span{font-size:11px}
   .marka .ortak-logo{height:20px}
+  /* dar telefonda üç marka tek banda sığsın */
+  @media (max-width:600px){.marka b{display:none}.bant-sag>span:nth-child(2){display:none}}
   .bant-sag{gap:10px;font-size:12px}#bag-yazi{display:none}.nokta-durum{width:8px;height:8px}
   .sahne{top:56px;padding:18px 16px 120px;overflow-y:auto}
   .kas{font-size:11px;letter-spacing:.26em}
@@ -169,7 +173,7 @@ body.kapali .bant-sag,body.kapali .marka>span,body.kapali .kontrol,body.kapali .
   .oyuncular{max-width:none;max-height:none;gap:6px;margin-top:14px}.oyuncular span{font-size:13px;padding:4px 10px}
   .halka{width:64px;height:64px}.halka b{font-size:24px}
   .soru-metin{font-size:23px;margin:10px 0 16px;max-width:none}
-  .siklar{grid-template-columns:1fr;gap:10px}
+  .siklar,.siklar.uc{grid-template-columns:1fr;gap:10px}
   .sik,.siklar.iki .sik{font-size:16px;padding:12px 14px;border-radius:14px;gap:12px}
   .sik b,.siklar.iki .sik b{width:32px;height:32px;font-size:14px}
   .sik .say{font-size:13px}
@@ -275,11 +279,11 @@ const kac=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 // Bilgisayarda (dosyadan) açılınca sorular-<set>.js okunur; sitede (yarisma-yonet) şifreli yarisma-<set>.json çözülür.
 const SETLER={
   skinsensual:{ad:'DumansStudio × Skinsensual',oda:'DUMANS',dosya:'yarisma-skinsensual.json'},
-  dimuem:{ad:"DumansStudio × d'muem",oda:'DIMUEM',dosya:'yarisma-dimuem.json'}
+  dimuem:{ad:"DumansStudio × d'muem × Rivaryum",oda:'DIMUEM',dosya:'yarisma-dimuem.json'}
 };
 const SET=(P.get('set')||'').toLowerCase().replace(/[^a-z0-9-]/g,'');
 let AYAR=null, SORU=null, SURE=30000, oda='', DEPO='', S=null, kanal=null, bagli=false, katilimUrl='';
-function kaydet(){try{localStorage.setItem(DEPO,JSON.stringify(S))}catch(e){}}
+function kaydet(){S.sonZ=Date.now();try{localStorage.setItem(DEPO,JSON.stringify(S))}catch(e){}}
 
 function girisGoster(hata){
   sahne('giris');$('kontrol').innerHTML='';
@@ -322,11 +326,16 @@ function baslat(){
   P.set('oda',oda);history.replaceState(null,'','?'+P.toString());
   DEPO='dsq-sunucu-'+oda;
   try{S=JSON.parse(localStorage.getItem(DEPO))}catch(e){}
+  // Biten ya da eski kalan yarışma sayfa açılınca sıfırlanır; yarım kalan yarışma için moderatöre sorulur
+  const ESKI=30*60*1000, simdi=Date.now();
+  if(S&&(S.faz==='lobi'||S.faz==='final')&&simdi-(S.finalZ||S.sonZ||0)>ESKI)S=null;
+  else if(S&&simdi-(S.sonZ||0)>ESKI&&!confirm('Yarım kalan bir yarışma var. Kaldığı yerden devam edilsin mi?\n\nTamam: devam et\nİptal: yeni yarışma başlat'))S=null;
   if(!S)S={faz:'lobi',i:-1,bitisZ:0,oyuncular:{},cevaplar:{}};
   if(!S.oyun){S.oyun=Date.now().toString(36)+Math.random().toString(36).slice(2,6);kaydet();} // her yarışmanın kimliği: telefonlar yeni yarışmayı anlar
 
   $('ortak-ad').textContent=AYAR.ortak;
-  if(AYAR.ortakLogo){$('ortak-ad').innerHTML='<img class="ortak-logo" src="'+kac(AYAR.ortakLogo)+'" alt="'+kac(AYAR.ortak)+'">';}
+  const logolar=AYAR.ortakLogolar||(AYAR.ortakLogo?[AYAR.ortakLogo]:[]);
+  if(logolar.length)$('ortak-ad').innerHTML=logolar.map(l=>'<img class="ortak-logo" src="'+kac(l)+'" alt="">').join(' × ');
   document.title='Yarışma Yönetimi · DumansStudio × '+AYAR.ortak;
   $('oda-kod').textContent=$('oda-kod2').textContent=oda;
   $('lobi-baslik').innerHTML=kac(AYAR.ust||'Pilates & Wellness')+'<br><em>'+kac(AYAR.baslik)+'</em>';
@@ -357,13 +366,13 @@ function siralama(){
 function genelDurum(){
   const q=SORU[S.i];
   const d={oda,oyun:S.oyun,ortak:AYAR.ortak,faz:S.faz,i:S.i,toplam:SORU.length,sure:SURE/1000};
-  if(AYAR.ortakLogo)d.ortakLogo=AYAR.ortakLogo;
+  if(AYAR.ortakLogolar)d.ortakLogolar=AYAR.ortakLogolar;else if(AYAR.ortakLogo)d.ortakLogo=AYAR.ortakLogo;
   if(AYAR.kazananNot)d.kazananNot=AYAR.kazananNot;
   if(AYAR.ilk3Not)d.ilk3Not=AYAR.ilk3Not;
   if(AYAR.odulSayisi)d.odul=AYAR.odulSayisi;
   if(AYAR.odulAdi)d.odulAdi=AYAR.odulAdi;
   // Finalde herkes telefonunda kazananları ve kendi sırasını görür
-  if(S.faz==='final'){const l=siralama();d.kisi=l.length;d.kazananlar=l.slice(0,Math.max(3,AYAR.odulSayisi||3)).map(o=>({id:o.id,ad:o.ad,p:o.p,d:o.d}));}
+  if(S.faz==='final'){const l=siralama();d.finalYas=Date.now()-(S.finalZ||0);d.kisi=l.length;d.kazananlar=l.slice(0,Math.max(3,AYAR.odulSayisi||3)).map(o=>({id:o.id,ad:o.ad,p:o.p,d:o.d}));}
   if(q&&S.faz!=='lobi'&&S.faz!=='final')d.soru={kategori:q.kategori,metin:q.soru,secenekler:harfler(q).map(h=>({id:h,text:q.secenekler[h]}))};
   if(S.faz==='soru'){d.kalan=Math.max(0,S.bitisZ-Date.now());d.alindi=Object.keys(S.cevaplar[S.i]||{});}
   if((S.faz==='cevap'||S.faz==='tablo')&&q){d.dogru=q.dogru;d.aciklama=q.aciklama;}
@@ -375,6 +384,8 @@ function genelDurum(){
 function katilIsle(m){
   if(!m||!m.id||!m.ad)return;
   const ad=String(m.ad).trim().slice(0,24);
+  // Biten yarışmaya yeni katılımcı eklenmez; telefon yeni yarışma başlayana kadar bekleme ekranında kalır
+  if(S.faz==='final'&&!S.oyuncular[m.id]){yayinla(1200);return;}
   if(!S.oyuncular[m.id])S.oyuncular[m.id]={ad,p:0,d:0,t:0,son:null};
   else S.oyuncular[m.id].ad=ad;
   kaydet();oyunculariCiz();
@@ -423,7 +434,7 @@ function ileri(){
   if(S.faz==='soru')return cevabiAc();
   if(S.faz==='cevap'||S.faz==='tablo'){
     if(S.i+1<SORU.length)return soruAc(S.i+1);
-    S.faz='final';kaydet();ciz();yayinla(0);return;
+    S.faz='final';S.finalZ=S.finalZ||Date.now();kaydet();ciz();yayinla(0);return;
   }
 }
 function yeniYarisma(){
@@ -453,7 +464,7 @@ function soruCiz(){
   $('soru-kat').textContent='Soru '+(S.i+1)+' / '+SORU.length+' · '+q.kategori;
   $('soru-metin').textContent=q.soru;
   $('soru').classList.toggle('acik',acik);
-  $('siklar').className='siklar'+(H.length===2?' iki':'');
+  $('siklar').className='siklar'+(H.length===2?' iki':H.length===3?' uc':'');
   $('siklar').innerHTML=H.map(h=>'<div class="sik'+(acik&&h===q.dogru?' dogru':'')+'"><i class="dolu" style="width:'+(acik?say[h]/top*100:0)+'%"></i><b>'+h+'</b><span>'+kac(q.secenekler[h])+'</span><em class="say">'+say[h]+' kişi</em></div>').join('');
   $('aciklama-metin').textContent=q.aciklama;
   cevapSayisiCiz();

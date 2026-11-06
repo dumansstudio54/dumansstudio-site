@@ -241,21 +241,24 @@ function durumIsle(d){
   durum=d;
   // Aynı QR ile yeni yarışma başladıysa eski cevapları unut
   if(d.oyun&&d.oyun!==oyunId){if(oyunId||d.faz==='lobi'){cevaplarim={};depo.koy('dsq-cevap-'+oda,'{}');kutlandi=false;}oyunId=d.oyun;depo.koy('dsq-oyun-'+oda,oyunId);}
-  $('ortak-satir').hidden=!(d.ortak||d.ortakLogo);
+  const logolar=(Array.isArray(d.ortakLogolar)?d.ortakLogolar:d.ortakLogo?[d.ortakLogo]:[]).filter(l=>/^[a-z0-9-]+\.png$/.test(l));
+  $('ortak-satir').hidden=!(d.ortak||logolar.length);
   // Ortak logosu yalnızca sitedeki bir .png dosya adı olabilir
-  if(d.ortakLogo&&/^[a-z0-9-]+\.png$/.test(d.ortakLogo)){if(!$('ortak').querySelector('img'))$('ortak').innerHTML='<img src="'+d.ortakLogo+'" alt="">';$('ortak').querySelector('img').alt=d.ortak||'';}
+  if(logolar.length){const k=logolar.join();if($('ortak').dataset.k!==k){$('ortak').dataset.k=k;$('ortak').innerHTML=logolar.map(l=>'<img src="'+l+'" alt="">').join(' × ');}}
   else if(d.ortak)$('ortak').textContent=d.ortak;
   if(d.sure)$('giris-metin').textContent='Adınızı yazın ve yarışmaya katılın. Sorular büyük ekranla aynı anda telefonunuzda açılacak; her soru için '+d.sure+' saniyeniz var.';
   const ben=(d.oyuncular||{})[benimId];
-  rozetGuncelle(ben?ben.p:0);
+  rozetGuncelle(ben&&!(d.faz==='final'&&(d.finalYas||0)>30*60*1000)?ben.p:0);
   if(!ad){goster('giris');return;}
   if(!ben&&Date.now()-sonKatil>3000)katilGonder(); // sunucu bizi tanımıyorsa (ör. sunucu ekranı yenilendi) yeniden katıl
   clearInterval(sayacZaman);
   // kutlama (gece + havai fişek): birinciye; ödül sayısı belirtildiyse ödül alan herkese
-  const birinci=d.faz==='final'&&ben&&ben.s&&(ben.s===1||(d.odul&&ben.s<=d.odul));
+  // Sonuçları yalnızca o yarışmaya katılanlar, yarışma bitişinden sonraki 30 dakika boyunca görür; diğerleri yeni yarışmayı bekler
+  const eskiFinal=d.faz==='final'&&(!ben||(d.finalYas||0)>30*60*1000);
+  const birinci=d.faz==='final'&&!eskiFinal&&ben.s&&(ben.s===1||(d.odul&&ben.s<=d.odul));
   document.body.classList.toggle('gece',birinci);
   if(!birinci&&fisekDur)fisekDur();
-  if(d.faz==='lobi'){goster('bekle');$('bekle-metin').textContent='Yarışmanın başlaması bekleniyor. Ekranı açık tutun; ilk soru birazdan gelecek.';}
+  if(d.faz==='lobi'||eskiFinal){goster('bekle');$('bekle-metin').textContent='Yarışmanın başlaması bekleniyor. Ekranı açık tutun; ilk soru birazdan gelecek.';}
   else if(d.faz==='soru'){
     bitis=Date.now()+(d.kalan||0);
     $('soru-kat').textContent='Soru '+(d.i+1)+' / '+d.toplam+' · '+d.soru.kategori;
